@@ -22,7 +22,7 @@ export default function OutputCanvas(props) {
     return () => {
       ref.removeChild(canvas);
     };
-  });
+  }, []);
 
   return (
     <div className={styles.canvasContainer}>
