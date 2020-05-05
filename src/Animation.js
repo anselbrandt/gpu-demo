@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 
-export default function OutputCanvas(props) {
+export default function Animation(props) {
   const { outputRef, width, height } = props;
 
   useEffect(() => {

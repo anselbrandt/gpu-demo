@@ -3,7 +3,7 @@ import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import test from "./test.mp4";
 
-export default function OutputCanvas(props) {
+export default function Convolution(props) {
   const { inputRef, outputRef, width, height } = props;
 
   useEffect(() => {
@@ -16,8 +16,18 @@ export default function OutputCanvas(props) {
     });
 
     const kernels = {
-      edgeDetection: [-1, -1, -1, -1, 5.05, -1, -1, -1, -1],
-      boxBlur: [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9],
+      edgeDetection: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+      gaussBlur: [
+        1 / 16,
+        2 / 16,
+        1 / 16,
+        2 / 16,
+        4 / 16,
+        2 / 16,
+        1 / 16,
+        2 / 16,
+        1 / 16,
+      ],
     };
 
     const convolution = gpu
@@ -57,7 +67,7 @@ export default function OutputCanvas(props) {
       .setOutput([width, height])
       .setGraphical(true);
 
-    const kernel = kernels.boxBlur;
+    const kernel = kernels.gaussBlur;
     const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
 
     const render = () => {
