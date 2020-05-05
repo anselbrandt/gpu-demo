@@ -1,37 +1,42 @@
 import React, { useEffect } from "react";
 import styles from "./App.module.css";
-import { GPU } from "gpu.js";
 
 export default function OutputCanvas(props) {
   const { outputRef, width, height } = props;
 
   useEffect(() => {
-    const ref = outputRef.current;
-    const gpu = new GPU({ mode: "gpu" });
-
-    const render = gpu
-      .createKernel(function () {
-        this.color(0.95, 0.95, 0.95, 1);
-      })
-      .setOutput([width, height])
-      .setGraphical(true);
-
+    const canvas = outputRef.current;
+    const context = canvas.getContext("2d");
+    let requestId,
+      i = 0;
+    const render = () => {
+      context.clearRect(0, 0, width, height);
+      context.beginPath();
+      context.arc(
+        width / 2,
+        height / 2,
+        (width / 4) * Math.abs(Math.cos(i)),
+        0,
+        2 * Math.PI
+      );
+      context.fill();
+      i += 0.025;
+      requestAnimationFrame(render);
+    };
     render();
-    const canvas = render.canvas;
-    ref.appendChild(canvas);
     return () => {
-      ref.removeChild(canvas);
+      cancelAnimationFrame(requestId);
     };
   }, [outputRef, width, height]);
 
   return (
     <div className={styles.canvasContainer}>
-      <div
+      <canvas
         ref={outputRef}
         width={width}
-        height={height}
+        height={0.75 * width}
         style={{ backgroundColor: "ghostwhite" }}
-      ></div>
+      ></canvas>
     </div>
   );
 }
