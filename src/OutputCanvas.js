@@ -11,7 +11,7 @@ export default function OutputCanvas(props) {
 
     const render = gpu
       .createKernel(function () {
-        this.color(0, 0, 0, 1);
+        this.color(0.95, 0.95, 0.95, 1);
       })
       .setOutput([width, height])
       .setGraphical(true);
@@ -22,7 +22,7 @@ export default function OutputCanvas(props) {
     return () => {
       ref.removeChild(canvas);
     };
-  }, []);
+  }, [outputRef, width, height]);
 
   return (
     <div className={styles.canvasContainer}>
