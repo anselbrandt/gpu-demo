@@ -67,7 +67,7 @@ export default function Convolution(props) {
       .setOutput([width, height])
       .setGraphical(true);
 
-    const kernel = kernels.gaussBlur;
+    const kernel = kernels.edgeDetection;
     const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
 
     const render = () => {
