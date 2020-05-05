@@ -1,52 +1,69 @@
 import React, { useEffect } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
+import test from "./test.mp4";
 
 export default function OutputCanvas(props) {
-  const { outputRef, width, height } = props;
+  const { inputRef, outputRef, width, height } = props;
 
   useEffect(() => {
     const canvas = outputRef.current;
+    const video = inputRef.current;
 
     const gpu = new GPU({
       canvas: canvas,
       mode: "gpu",
     });
 
-    const size = [width, height];
-    const centerX = size[0] / 2;
-    const centerY = size[1] / 2;
+    const kernels = {
+      edgeDetection: [-1, -1, -1, -1, 5.05, -1, -1, -1, -1],
+      boxBlur: [1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9, 1 / 9],
+    };
 
-    const kernel = gpu.createKernel(
-      function (x) {
-        const dist = Math.sqrt(
-          Math.pow(this.thread.x - this.constants.centerX, 2) +
-            Math.pow(this.thread.y - this.constants.centerY, 2)
-        );
-        this.color(
-          (Math.abs(Math.sin(this.thread.x)) * dist) / this.constants.centerX,
-          (Math.abs(Math.sin(this.thread.y)) * this.constants.centerY) /
-            (dist * 32),
-          (Math.abs(Math.cos(x)) * dist) / 64
-        );
-      },
-      {
-        output: size,
-        graphical: true,
-        constants: {
-          centerX,
-          centerY,
-          sizeX: size[0],
-          sizeY: size[1],
-        },
-      }
-    );
-    let param = 0.0;
+    const convolution = gpu
+      .createKernel(function (src, width, height, kernel, kernelRadius) {
+        const kSize = 2 * kernelRadius + 1;
+        let r = 0,
+          g = 0,
+          b = 0;
+
+        let i = -kernelRadius;
+        let kernelOffset = 0;
+        while (i <= kernelRadius) {
+          if (this.thread.x + i < 0 || this.thread.x + i >= width) {
+            i++;
+            continue;
+          }
+
+          let j = -kernelRadius;
+          while (j <= kernelRadius) {
+            if (this.thread.y + j < 0 || this.thread.y + j >= height) {
+              j++;
+              continue;
+            }
+
+            kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
+            const weights = kernel[kernelOffset];
+            const pixel = src[this.thread.y + i][this.thread.x + j];
+            r += pixel.r * weights;
+            g += pixel.g * weights;
+            b += pixel.b * weights;
+            j++;
+          }
+          i++;
+        }
+        this.color(r, g, b);
+      })
+      .setOutput([width, height])
+      .setGraphical(true);
+
+    const kernel = kernels.boxBlur;
+    const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
+
     const render = () => {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
-      kernel(param);
-      param += 0.005;
+      convolution(video, width, height, kernel, kernelRadius);
       requestAnimationFrame(render);
     };
 
@@ -54,14 +71,35 @@ export default function OutputCanvas(props) {
     return () => {
       cancelAnimationFrame(render);
     };
-  }, [outputRef, width, height]);
+  }, [inputRef, outputRef, width, height]);
 
   return (
-    <div className={styles.canvasContainer}>
-      <canvas
-        ref={outputRef}
-        style={{ backgroundColor: "ghostwhite", width: width, height: height }}
-      ></canvas>
-    </div>
+    <React.Fragment>
+      <div className={styles.canvasContainer}>
+        <video
+          ref={inputRef}
+          width={width}
+          height={height}
+          style={{ backgroundColor: "ghostwhite" }}
+          id="video"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src={test} type="video/mp4" />
+        </video>
+      </div>
+      <div className={styles.canvasContainer}>
+        <canvas
+          ref={outputRef}
+          style={{
+            backgroundColor: "ghostwhite",
+            width: width,
+            height: height,
+          }}
+        ></canvas>
+      </div>
+    </React.Fragment>
   );
 }

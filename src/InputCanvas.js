@@ -13,9 +13,10 @@ export default function InputCanvas(props) {
         height={height}
         style={{ backgroundColor: "ghostwhite" }}
         id="video"
-        autoPlay={true}
-        loop={true}
-        muted={true}
+        autoPlay
+        loop
+        muted
+        playsInline
       >
         <source src={test} type="video/mp4" />
       </video>
