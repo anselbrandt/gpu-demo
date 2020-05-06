@@ -92,13 +92,14 @@ export default function Convolution(props) {
           height={height}
           style={{ backgroundColor: "ghostwhite" }}
           id="video"
+          src={test}
+          type="video/mp4"
           autoPlay
           loop
           muted
           playsInline
-        >
-          <source src={test} type="video/mp4" />
-        </video>
+          controls
+        ></video>
       </div>
       <div className={styles.canvasContainer}>
         <canvas
