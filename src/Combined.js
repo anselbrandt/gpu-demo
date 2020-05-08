@@ -20,9 +20,10 @@ export default function Filter(props) {
         const pixel = videoFrame[this.thread.y][this.thread.x];
         const gray = 0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2];
         this.color(gray, gray, gray, pixel[3]);
+        return this.thread;
       },
       {
-        graphical: true,
+        graphical: false,
         output: [width, height],
       }
     );
@@ -45,7 +46,7 @@ export default function Filter(props) {
     const render = () => {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
-      filter(video);
+      kernel(filter(video));
       requestAnimationFrame(render);
     };
 
