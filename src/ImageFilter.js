@@ -1,15 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import image_1 from "./image_1.png";
 
 export default function ImageFilter(props) {
   const { inputRef, outputRef, width, height } = props;
-  const renders = useRef(1);
 
   useEffect(() => {
-    console.log("Renders: ", renders.current++);
-
     const canvas = outputRef.current;
     const image = inputRef.current;
 
@@ -32,7 +29,10 @@ export default function ImageFilter(props) {
 
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
-    filter(image);
+    image.addEventListener("load", () => {
+      filter(image);
+    });
+    return () => image.removeEventListener("load", () => filter(image));
   }, [inputRef, outputRef, width, height]);
 
   return (
