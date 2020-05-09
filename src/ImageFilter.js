@@ -28,14 +28,54 @@ export default function ImageFilter(props) {
       }
     );
 
-    const kernel = gpu.createKernel(
-      function (videoFrame) {
-        if (this.thread.y < 10 && this.thread.x < 10) {
-          this.color(1, 0, 0, 1);
-        } else {
-          const pixel = videoFrame[this.thread.y][this.thread.x];
-          this.color(pixel[0], pixel[1], pixel[2], pixel[3]);
+    const kernels = {
+      edgeDetection: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+      gaussBlur: [
+        1 / 16,
+        2 / 16,
+        1 / 16,
+        2 / 16,
+        4 / 16,
+        2 / 16,
+        1 / 16,
+        2 / 16,
+        1 / 16,
+      ],
+    };
+
+    const convolution = gpu.createKernel(
+      function (src, width, height, kernel, kernelRadius) {
+        const kSize = 2 * kernelRadius + 1;
+        let r = 0,
+          g = 0,
+          b = 0;
+
+        let i = -kernelRadius;
+        let kernelOffset = 0;
+        while (i <= kernelRadius) {
+          if (this.thread.x + i < 0 || this.thread.x + i >= width) {
+            i++;
+            continue;
+          }
+
+          let j = -kernelRadius;
+          while (j <= kernelRadius) {
+            if (this.thread.y + j < 0 || this.thread.y + j >= height) {
+              j++;
+              continue;
+            }
+
+            kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
+            const weights = kernel[kernelOffset];
+            const pixel = src[this.thread.y + i][this.thread.x + j];
+            r += pixel.r * weights;
+            g += pixel.g * weights;
+            b += pixel.b * weights;
+            j++;
+          }
+          i++;
         }
+        this.color(r, g, b);
       },
       {
         graphical: true,
@@ -43,12 +83,18 @@ export default function ImageFilter(props) {
       }
     );
 
+    const kernel = kernels.edgeDetection;
+    const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
+
     canvas.width = canvas.clientWidth;
     canvas.height = canvas.clientHeight;
     image.addEventListener("load", () => {
-      kernel(filter(image));
+      convolution(filter(image), width, height, kernel, kernelRadius);
     });
-    return () => image.removeEventListener("load", () => kernel(filter(image)));
+    return () =>
+      image.removeEventListener("load", () =>
+        convolution(filter(image), width, height, kernel, kernelRadius)
+      );
   }, [inputRef, outputRef, width, height]);
 
   return (
