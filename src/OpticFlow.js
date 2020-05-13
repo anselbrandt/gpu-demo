@@ -108,8 +108,6 @@ export default function OpticFlow(props) {
     );
 
     const render = () => {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
       convolution(filter(video), width, height, kernel, kernelRadius);
       redFilter(canvas);
       requestAnimationFrame(render);
