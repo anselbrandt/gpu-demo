@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import styles from "./App.module.css";
 import useGetViewport from "./useGetViewport";
-import Combined from "./Combined";
+import OpticFlow from "./OpticFlow";
 
 function App() {
   const inputRef = useRef();
@@ -12,7 +12,7 @@ function App() {
     <div className={styles.app}>
       <div className={styles.canvasesContainer}>
         <div className={styles.canvases}>
-          <Combined
+          <OpticFlow
             inputRef={inputRef}
             outputRef={outputRef}
             width={width * 0.49}
