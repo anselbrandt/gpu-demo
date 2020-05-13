@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import test from "./test.mp4";
 
 export default function OpticFlow(props) {
   const { inputRef, outputRef, flowRef, width, height } = props;
+  const renders = useRef(1);
 
   useEffect(() => {
+    console.log("Renders: ", renders.current++);
     const video = inputRef.current;
     const canvas = outputRef.current;
     const opticFlow = flowRef.current;
@@ -113,9 +115,13 @@ export default function OpticFlow(props) {
       requestAnimationFrame(render);
     };
 
-    requestAnimationFrame(render);
+    video.addEventListener("loadeddata", () => {
+      requestAnimationFrame(render);
+    });
     return () => {
-      cancelAnimationFrame(render);
+      video.removeEventListener("loadeddata", () => {
+        cancelAnimationFrame(render);
+      });
     };
   }, [inputRef, outputRef, flowRef, width, height]);
 
