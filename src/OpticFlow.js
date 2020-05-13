@@ -4,11 +4,12 @@ import { GPU } from "gpu.js";
 import test from "./test.mp4";
 
 export default function OpticFlow(props) {
-  const { inputRef, outputRef, width, height } = props;
+  const { inputRef, outputRef, flowRef, width, height } = props;
 
   useEffect(() => {
-    const canvas = outputRef.current;
     const video = inputRef.current;
+    const canvas = outputRef.current;
+    const opticFlow = flowRef.current;
 
     const gpu = new GPU({
       canvas: canvas,
@@ -86,10 +87,29 @@ export default function OpticFlow(props) {
     const kernel = kernels.edgeDetection;
     const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
 
+    const flowGpu = new GPU({
+      canvas: opticFlow,
+      mode: "gpu",
+    });
+
+    const redFilter = flowGpu.createKernel(
+      function (videoFrame) {
+        const pixel = videoFrame[this.thread.y][this.thread.x];
+        if (pixel[0] === 1 && pixel[1] === 1 && pixel[2] === 1) {
+          this.color(1, 0, 0, pixel[3]);
+        }
+      },
+      {
+        graphical: true,
+        output: [width, height],
+      }
+    );
+
     const render = () => {
       canvas.width = canvas.clientWidth;
       canvas.height = canvas.clientHeight;
       convolution(filter(video), width, height, kernel, kernelRadius);
+      redFilter(canvas);
       requestAnimationFrame(render);
     };
 
@@ -97,7 +117,7 @@ export default function OpticFlow(props) {
     return () => {
       cancelAnimationFrame(render);
     };
-  }, [inputRef, outputRef, width, height]);
+  }, [inputRef, outputRef, flowRef, width, height]);
 
   return (
     <React.Fragment>
@@ -120,6 +140,16 @@ export default function OpticFlow(props) {
       <div className={styles.canvasContainer}>
         <canvas
           ref={outputRef}
+          style={{
+            backgroundColor: "ghostwhite",
+            width: width,
+            height: height,
+          }}
+        ></canvas>
+      </div>
+      <div className={styles.canvasContainer}>
+        <canvas
+          ref={flowRef}
           style={{
             backgroundColor: "ghostwhite",
             width: width,

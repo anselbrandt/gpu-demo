@@ -6,6 +6,7 @@ import OpticFlow from "./OpticFlow";
 function App() {
   const inputRef = useRef();
   const outputRef = useRef();
+  const flowRef = useRef();
   const { width } = useGetViewport();
 
   return (
@@ -15,8 +16,9 @@ function App() {
           <OpticFlow
             inputRef={inputRef}
             outputRef={outputRef}
-            width={width * 0.49}
-            height={width * 0.49 * 0.75}
+            flowRef={flowRef}
+            width={width * 0.32}
+            height={width * 0.32 * 0.75}
           />
         </div>
       </div>
