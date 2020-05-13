@@ -1,14 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import test from "./test.mp4";
 
 export default function OpticFlow(props) {
   const { inputRef, outputRef, flowRef, width, height } = props;
-  const renders = useRef(1);
 
   useEffect(() => {
-    console.log("Renders: ", renders.current++);
     const video = inputRef.current;
     const canvas = outputRef.current;
     const opticFlow = flowRef.current;
