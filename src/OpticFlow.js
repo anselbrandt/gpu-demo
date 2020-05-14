@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import test from "./test.mp4";
 
 export default function OpticFlow(props) {
   const { inputRef, outputRef, flowRef, width, height } = props;
+  const prevFrame = useRef();
 
   useEffect(() => {
     const video = inputRef.current;
@@ -50,7 +51,6 @@ export default function OpticFlow(props) {
         let r = 0,
           g = 0,
           b = 0;
-
         let i = -kernelRadius;
         let kernelOffset = 0;
         while (i <= kernelRadius) {
@@ -58,14 +58,12 @@ export default function OpticFlow(props) {
             i++;
             continue;
           }
-
           let j = -kernelRadius;
           while (j <= kernelRadius) {
             if (this.thread.y + j < 0 || this.thread.y + j >= height) {
               j++;
               continue;
             }
-
             kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
             const weights = kernel[kernelOffset];
             const pixel = src[this.thread.y + i][this.thread.x + j];
@@ -108,9 +106,9 @@ export default function OpticFlow(props) {
     const render = () => {
       convolution(filter(video), width, height, kernel, kernelRadius);
       redFilter(canvas);
+      prevFrame.current = convolution.getPixels(true);
       requestAnimationFrame(render);
     };
-
     video.addEventListener("loadeddata", () => {
       requestAnimationFrame(render);
     });
