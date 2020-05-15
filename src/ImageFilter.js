@@ -4,11 +4,12 @@ import { GPU } from "gpu.js";
 import image_1 from "./image_1.png";
 
 export default function ImageFilter(props) {
-  const { inputRef, outputRef, width, height } = props;
+  const { inputRef, outputRef, flowRef, width, height } = props;
 
   useEffect(() => {
-    const canvas = outputRef.current;
     const image = inputRef.current;
+    const canvas = outputRef.current;
+    const pixelImage = flowRef.current;
 
     const gpu = new GPU({
       canvas: canvas,
@@ -95,7 +96,7 @@ export default function ImageFilter(props) {
       image.removeEventListener("load", () =>
         convolution(filter(image), width, height, kernel, kernelRadius)
       );
-  }, [inputRef, outputRef, width, height]);
+  }, [inputRef, outputRef, flowRef, width, height]);
 
   return (
     <React.Fragment>
@@ -114,6 +115,16 @@ export default function ImageFilter(props) {
       <div className={styles.canvasContainer}>
         <canvas
           ref={outputRef}
+          style={{
+            backgroundColor: "ghostwhite",
+            width: width,
+            height: height,
+          }}
+        ></canvas>
+      </div>
+      <div className={styles.canvasContainer}>
+        <canvas
+          ref={flowRef}
           style={{
             backgroundColor: "ghostwhite",
             width: width,

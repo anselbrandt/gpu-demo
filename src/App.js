@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import styles from "./App.module.css";
 import useGetViewport from "./useGetViewport";
-import OpticFlow from "./OpticFlow";
+import PaintedCanvas from "./PaintedCanvas";
 
 function App() {
   const inputRef = useRef();
@@ -13,7 +13,7 @@ function App() {
     <div className={styles.app}>
       <div className={styles.canvasesContainer}>
         <div className={styles.canvases}>
-          <OpticFlow
+          <PaintedCanvas
             inputRef={inputRef}
             outputRef={outputRef}
             flowRef={flowRef}
