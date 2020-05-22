@@ -17,8 +17,8 @@ function App() {
             inputRef={inputRef}
             outputRef={outputRef}
             flowRef={flowRef}
-            width={parseInt(width * 0.33)}
-            height={parseInt(width * 0.33 * 0.75)}
+            width={parseInt(width * 0.49)}
+            height={parseInt(width * 0.49 * 0.75)}
           />
         </div>
       </div>
