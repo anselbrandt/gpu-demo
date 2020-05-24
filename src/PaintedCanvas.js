@@ -5,14 +5,23 @@ import image_1 from "./image_1.png";
 import image_2 from "./image_1.png";
 
 export default function ImageFilter(props) {
-  const { inputRef, outputRef, width, height } = props;
+  const {
+    inputRef,
+    inputRef2,
+    outputRef,
+    outputRef2,
+    flowRef,
+    width,
+    height,
+  } = props;
 
   useEffect(() => {
     const image = inputRef.current;
+    const image2 = inputRef2.current;
     const canvas = outputRef.current;
+    const canvas2 = outputRef2.current;
     const context = canvas.getContext("webgl");
-    console.log(context);
-    console.log(height, width);
+    const context2 = canvas2.getContext("webgl");
 
     const gpu = new GPU({
       canvas: canvas,
@@ -20,7 +29,26 @@ export default function ImageFilter(props) {
       mode: "gpu",
     });
 
+    const gpu2 = new GPU({
+      canvas: canvas2,
+      context: context2,
+      mode: "gpu",
+    });
+
     const filter = gpu.createKernelMap(
+      function (image) {
+        let pixel = image[this.thread.y][this.thread.x];
+        const gray = 0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2];
+        this.color(gray, gray, gray, pixel[3]);
+      },
+      {
+        graphical: true,
+        output: [width, height],
+        pipeline: true,
+      }
+    );
+
+    const filter2 = gpu2.createKernelMap(
       function (image) {
         let pixel = image[this.thread.y][this.thread.x];
         const gray = 0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2];
@@ -88,17 +116,52 @@ export default function ImageFilter(props) {
       }
     );
 
+    const convolution2 = gpu2.createKernel(
+      function (src, width, height, kernel, kernelRadius) {
+        const kSize = 2 * kernelRadius + 1;
+        let r = 0,
+          g = 0,
+          b = 0;
+
+        let i = -kernelRadius;
+        let kernelOffset = 0;
+        while (i <= kernelRadius) {
+          if (this.thread.x + i < 0 || this.thread.x + i >= width) {
+            i++;
+            continue;
+          }
+
+          let j = -kernelRadius;
+          while (j <= kernelRadius) {
+            if (this.thread.y + j < 0 || this.thread.y + j >= height) {
+              j++;
+              continue;
+            }
+
+            kernelOffset = (j + kernelRadius) * kSize + i + kernelRadius;
+            const weights = kernel[kernelOffset];
+            const pixel = src[this.thread.y + i][this.thread.x + j];
+            r += pixel.r * weights;
+            g += pixel.g * weights;
+            b += pixel.b * weights;
+            j++;
+          }
+          i++;
+        }
+        this.color(r, g, b);
+      },
+      {
+        graphical: true,
+        output: [width, height],
+      }
+    );
+
     const kernel = kernels.edgeDetection;
     const kernelRadius = (Math.sqrt(kernel.length) - 1) / 2;
 
     const render = () => {
-      context.viewport(
-        0,
-        0,
-        context.drawingBufferWidth,
-        context.drawingBufferHeight
-      );
       convolution(filter(image), width, height, kernel, kernelRadius);
+      convolution2(filter2(image2), width, height, kernel, kernelRadius);
       requestAnimationFrame(render);
     };
 
@@ -107,43 +170,75 @@ export default function ImageFilter(props) {
     });
     return () =>
       image.removeEventListener("load", () => cancelAnimationFrame(render));
-  }, [inputRef, outputRef, width, height]);
+  }, [inputRef, inputRef2, outputRef, outputRef2, flowRef, width, height]);
 
   return (
     <React.Fragment>
-      <div className={styles.canvasContainer}>
-        <img
-          ref={inputRef}
-          style={{
-            backgroundColor: "ghostwhite",
-            width: width,
-            height: height,
-          }}
-          src={image_1}
-          alt={"image_1"}
-        ></img>
+      <div className={styles.canvasesContainer}>
+        <div className={styles.canvases}>
+          <div className={styles.canvasContainer}>
+            <img
+              ref={inputRef}
+              style={{
+                backgroundColor: "ghostwhite",
+                width: width,
+                height: height,
+              }}
+              src={image_1}
+              alt={"image_1"}
+            ></img>
+          </div>
+          <div className={styles.canvasContainer}>
+            <img
+              ref={inputRef2}
+              style={{
+                backgroundColor: "ghostwhite",
+                width: width,
+                height: height,
+              }}
+              src={image_2}
+              alt={"image_2"}
+            ></img>
+          </div>
+        </div>
       </div>
-      <div className={styles.canvasContainer}>
-        <img
-          ref={inputRef}
-          style={{
-            backgroundColor: "ghostwhite",
-            width: width,
-            height: height,
-          }}
-          src={image_2}
-          alt={"image_2"}
-        ></img>
+      <div className={styles.canvasesContainer}>
+        <div className={styles.canvases}>
+          <div className={styles.canvasContainer}>
+            <canvas
+              ref={outputRef}
+              style={{
+                backgroundColor: "ghostwhite",
+                width: width,
+                height: height,
+              }}
+            ></canvas>
+          </div>
+          <div className={styles.canvasContainer}>
+            <canvas
+              ref={outputRef2}
+              style={{
+                backgroundColor: "ghostwhite",
+                width: width,
+                height: height,
+              }}
+            ></canvas>
+          </div>
+        </div>
       </div>
-      <div className={styles.canvasContainer}>
-        <canvas
-          ref={outputRef}
-          style={{
-            backgroundColor: "ghostwhite",
-            width: width,
-            height: height,
-          }}
-        ></canvas>
+      <div className={styles.canvasesContainer}>
+        <div className={styles.canvases}>
+          <div className={styles.canvasContainer}>
+            <canvas
+              ref={flowRef}
+              style={{
+                backgroundColor: "ghostwhite",
+                width: width,
+                height: height,
+              }}
+            ></canvas>
+          </div>
+        </div>
       </div>
     </React.Fragment>
   );

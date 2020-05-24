@@ -5,23 +5,23 @@ import PaintedCanvas from "./PaintedCanvas";
 
 function App() {
   const inputRef = useRef();
+  const inputRef2 = useRef();
   const outputRef = useRef();
+  const outputRef2 = useRef();
   const flowRef = useRef();
   const { width } = useGetViewport();
 
   return (
     <div className={styles.app}>
-      <div className={styles.canvasesContainer}>
-        <div className={styles.canvases}>
-          <PaintedCanvas
-            inputRef={inputRef}
-            outputRef={outputRef}
-            flowRef={flowRef}
-            width={parseInt(width * 0.33)}
-            height={parseInt(width * 0.33 * 0.75)}
-          />
-        </div>
-      </div>
+      <PaintedCanvas
+        inputRef={inputRef}
+        inputRef2={inputRef2}
+        outputRef={outputRef}
+        outputRef2={outputRef2}
+        flowRef={flowRef}
+        width={parseInt(width * 0.33)}
+        height={parseInt(width * 0.33 * 0.75)}
+      />
     </div>
   );
 }
