@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import styles from "./App.module.css";
 import { GPU } from "gpu.js";
 import image_1 from "./image_1.png";
+import image_2 from "./image_1.png";
 
 export default function ImageFilter(props) {
   const { inputRef, outputRef, width, height } = props;
@@ -120,6 +121,18 @@ export default function ImageFilter(props) {
           }}
           src={image_1}
           alt={"image_1"}
+        ></img>
+      </div>
+      <div className={styles.canvasContainer}>
+        <img
+          ref={inputRef}
+          style={{
+            backgroundColor: "ghostwhite",
+            width: width,
+            height: height,
+          }}
+          src={image_2}
+          alt={"image_2"}
         ></img>
       </div>
       <div className={styles.canvasContainer}>
