@@ -31,18 +31,6 @@ export default function ImageFilter(props) {
       mode: "gpu",
     });
 
-    const gpu2 = new GPU({
-      canvas: canvas2,
-      context: context2,
-      mode: "gpu",
-    });
-
-    // const flowGpu = new GPU({
-    //   canvas: flowCanvas,
-    //   context: flowContext,
-    //   mode: "gpu",
-    // });
-
     const filter = gpu.createKernelMap(
       function (image) {
         let pixel = image[this.thread.y][this.thread.x];
@@ -56,6 +44,12 @@ export default function ImageFilter(props) {
       }
     );
 
+    const gpu2 = new GPU({
+      canvas: canvas2,
+      context: context2,
+      mode: "gpu",
+    });
+
     const filter2 = gpu2.createKernelMap(
       function (image) {
         let pixel = image[this.thread.y][this.thread.x];
@@ -68,6 +62,12 @@ export default function ImageFilter(props) {
         pipeline: true,
       }
     );
+
+    // const flowGpu = new GPU({
+    //   canvas: flowCanvas,
+    //   context: flowContext,
+    //   mode: "gpu",
+    // });
 
     // const flowFilter = flowGpu.createKernel(
     //   function (image) {
@@ -187,8 +187,14 @@ export default function ImageFilter(props) {
       convolution2(filter2(image2), width, height, kernel, kernelRadius);
       const pixels = convolution2.getPixels();
       const imagePixels = new ImageData(pixels, width, height);
-      console.log(pixels);
-      console.log(imagePixels);
+      const pixelsArray = Array.from(pixels);
+      const pixelsFloat = pixelsArray.map((value) => value / 255);
+      const pixelsInput = input(new Float32Array(pixelsFloat), [
+        width,
+        height,
+        4,
+      ]);
+      console.log(pixelsInput);
       // flowContext.viewport(
       //   0,
       //   0,
@@ -203,9 +209,6 @@ export default function ImageFilter(props) {
       console.log("context: ", flowContext.width, flowContext.height);
       console.log("canvas: ", flowCanvas.width, flowCanvas.height);
       flowContext.putImageData(imagePixels, 0, 0, 0, 0, width, height);
-      createImageBitmap(imagePixels).then((data) =>
-        flowContext.drawImage(data, 0, 0, width, height)
-      );
       //requestAnimationFrame(render);
     };
 
