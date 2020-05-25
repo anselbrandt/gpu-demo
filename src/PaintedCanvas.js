@@ -187,24 +187,37 @@ export default function ImageFilter(props) {
       convolution2(filter2(image2), width, height, kernel, kernelRadius);
       const pixels = convolution2.getPixels();
       const imagePixels = new ImageData(pixels, width, height);
-      // context.viewport(
+      console.log(pixels);
+      console.log(imagePixels);
+      // flowContext.viewport(
       //   0,
       //   0,
-      //   context.drawingBufferWidth,
-      //   context.drawingBufferHeight
+      //   flowContext.drawingBufferWidth,
+      //   flowContext.drawingBufferHeight
       // );
+      flowCanvas.width = width;
+      flowCanvas.height = height;
+      flowContext.width = width;
+      flowContext.height = height;
+      console.log("dimensions: ", width, height);
+      console.log("context: ", flowContext.width, flowContext.height);
+      console.log("canvas: ", flowCanvas.width, flowCanvas.height);
       flowContext.putImageData(imagePixels, 0, 0, 0, 0, width, height);
       createImageBitmap(imagePixels).then((data) =>
         flowContext.drawImage(data, 0, 0, width, height)
       );
-      requestAnimationFrame(render);
+      //requestAnimationFrame(render);
     };
 
     image.addEventListener("load", () => {
-      requestAnimationFrame(render);
+      //requestAnimationFrame(render);
+      render();
     });
     return () =>
-      image.removeEventListener("load", () => cancelAnimationFrame(render));
+      image.removeEventListener("load", () => {
+        //cancelAnimationFrame(render)
+        render();
+      });
   }, [inputRef, inputRef2, outputRef, outputRef2, flowRef, width, height]);
 
   return (
