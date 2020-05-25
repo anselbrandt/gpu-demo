@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import styles from "./App.module.css";
-import { GPU } from "gpu.js";
+import { GPU, input } from "gpu.js";
 import image_1 from "./image_1.png";
 import image_2 from "./image_1.png";
 
@@ -20,8 +20,10 @@ export default function ImageFilter(props) {
     const image2 = inputRef2.current;
     const canvas = outputRef.current;
     const canvas2 = outputRef2.current;
+    const flowCanvas = flowRef.current;
     const context = canvas.getContext("webgl");
     const context2 = canvas2.getContext("webgl");
+    const flowContext = flowCanvas.getContext("2d");
 
     const gpu = new GPU({
       canvas: canvas,
@@ -34,6 +36,12 @@ export default function ImageFilter(props) {
       context: context2,
       mode: "gpu",
     });
+
+    // const flowGpu = new GPU({
+    //   canvas: flowCanvas,
+    //   context: flowContext,
+    //   mode: "gpu",
+    // });
 
     const filter = gpu.createKernelMap(
       function (image) {
@@ -60,6 +68,21 @@ export default function ImageFilter(props) {
         pipeline: true,
       }
     );
+
+    // const flowFilter = flowGpu.createKernel(
+    //   function (image) {
+    //     const pixel = image[this.thread.y][this.thread.x];
+    //     if (pixel[0] === 1 && pixel[1] === 1 && pixel[2] === 1) {
+    //       this.color(1, 0, 0, pixel[3]);
+    //     } else {
+    //       this.color(pixel[0], pixel[1], pixel[2], pixel[3]);
+    //     }
+    //   },
+    //   {
+    //     graphical: true,
+    //     output: [width, height],
+    //   }
+    // );
 
     const kernels = {
       edgeDetection: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
@@ -162,6 +185,18 @@ export default function ImageFilter(props) {
     const render = () => {
       convolution(filter(image), width, height, kernel, kernelRadius);
       convolution2(filter2(image2), width, height, kernel, kernelRadius);
+      const pixels = convolution2.getPixels();
+      const imagePixels = new ImageData(pixels, width, height);
+      // context.viewport(
+      //   0,
+      //   0,
+      //   context.drawingBufferWidth,
+      //   context.drawingBufferHeight
+      // );
+      flowContext.putImageData(imagePixels, 0, 0, 0, 0, width, height);
+      createImageBitmap(imagePixels).then((data) =>
+        flowContext.drawImage(data, 0, 0, width, height)
+      );
       requestAnimationFrame(render);
     };
 
