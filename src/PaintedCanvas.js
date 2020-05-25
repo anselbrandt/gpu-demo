@@ -187,14 +187,6 @@ export default function ImageFilter(props) {
       convolution2(filter2(image2), width, height, kernel, kernelRadius);
       const pixels = convolution2.getPixels();
       const imagePixels = new ImageData(pixels, width, height);
-      const pixelsArray = Array.from(pixels);
-      const pixelsFloat = pixelsArray.map((value) => value / 255);
-      const pixelsInput = input(new Float32Array(pixelsFloat), [
-        width,
-        height,
-        4,
-      ]);
-      console.log(pixelsInput);
       // flowContext.viewport(
       //   0,
       //   0,
@@ -205,9 +197,6 @@ export default function ImageFilter(props) {
       flowCanvas.height = height;
       flowContext.width = width;
       flowContext.height = height;
-      console.log("dimensions: ", width, height);
-      console.log("context: ", flowContext.width, flowContext.height);
-      console.log("canvas: ", flowCanvas.width, flowCanvas.height);
       flowContext.putImageData(imagePixels, 0, 0, 0, 0, width, height);
       //requestAnimationFrame(render);
     };
