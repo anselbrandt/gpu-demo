@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import styles from "./App.module.css";
 import useGetViewport from "./useGetViewport";
-import PaintedCanvas from "./PaintedCanvas";
+import Combined from "./Combined";
 
 function App() {
   const inputRef = useRef();
@@ -13,14 +13,14 @@ function App() {
 
   return (
     <div className={styles.app}>
-      <PaintedCanvas
+      <Combined
         inputRef={inputRef}
         inputRef2={inputRef2}
         outputRef={outputRef}
         outputRef2={outputRef2}
         flowRef={flowRef}
-        width={parseInt(width * 0.33)}
-        height={parseInt(width * 0.33 * 0.75)}
+        width={parseInt(width * 0.49)}
+        height={parseInt(width * 0.49 * 0.75)}
       />
     </div>
   );
